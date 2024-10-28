@@ -102,7 +102,7 @@ class QueryDetector
                 'query' => $query->sql,
                 'model' => $model,
                 'sources' => $sources,
-                'bindings' => $bindings,
+                'bindings_json' => $bindings,
             ];
         }
     }
