@@ -5,6 +5,7 @@ namespace BeyondCode\QueryDetector;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Queue\Events\JobProcessing;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\ServiceProvider;
 
@@ -24,6 +25,8 @@ class QueryDetectorServiceProvider extends ServiceProvider
         $this->registerMiddleware(QueryDetectorMiddleware::class);
 
         Queue::before(static function (JobProcessing $event) {
+            $jobData = $event->job->payload();
+            Log::withContext(['job_name' => $jobData['displayName'] ?? $event->job::class]);
             /** @var QueryDetector $detector */
             $detector = app()->make(QueryDetector::class);
             if ($detector->isEnabled()) {
