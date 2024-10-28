@@ -22,6 +22,6 @@ class Log implements Output
 
     private function log(array $context = [])
     {
-        LaravelLog::channel(config('querydetector.log_channel'))->warning('Detected N+1 Query', $context);
+        logger()?->warning('Detected N+1 Query', $context);
     }
 }
