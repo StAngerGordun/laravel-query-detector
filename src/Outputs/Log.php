@@ -36,6 +36,6 @@ class Log implements Output
 
     private function log(string $message)
     {
-        LaravelLog::channel(config('querydetector.log_channel'))->info($message);
+        LaravelLog::channel(config('querydetector.log_channel'))->info($message, []);
     }
 }

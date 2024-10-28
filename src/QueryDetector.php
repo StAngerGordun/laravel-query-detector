@@ -81,35 +81,26 @@ class QueryDetector
             if (is_array($relation) && isset($relation['object'])) {
                 if ($relation['class'] === Relation::class) {
                     $model = get_class($relation['object']->getParent());
-                    $relationName = get_class($relation['object']->getRelated());
-                    $relatedModel = $relationName;
                 } else {
                     $model = get_class($relation['object']);
-                    $relationName = $relation['args'][0];
-                    $relatedModel = $relationName;
                 }
-
-                $sources = $this->findSource($backtrace);
-                
-                if (empty($sources)) {
-                    return;
-                }
-
-                $key = md5($query->sql . $model . $relationName . $sources[0]->name . $sources[0]->line);
-
-                $count = Arr::get($this->queries, $key . '.count', 0);
-                $time = Arr::get($this->queries, $key . '.time', 0);
-
-                $this->queries[$key] = [
-                    'count' => ++$count,
-                    'time' => $time + $query->time,
-                    'query' => $query->sql,
-                    'model' => $model,
-                    'relatedModel' => $relatedModel,
-                    'relation' => $relationName,
-                    'sources' => $sources
-                ];
+            } else {
+                $model = get_class($modelTrace['object'] ?? '');
             }
+            $sources = $this->findSource($backtrace);
+
+
+            $key = md5($query->sql);
+            $count = Arr::get($this->queries, $key . '.count', 0);
+            $time = Arr::get($this->queries, $key . '.time', 0);
+
+            $this->queries[$key] = [
+                'count' => ++$count,
+                'time' => $time + $query->time,
+                'query' => $query->sql,
+                'model' => $model,
+                'sources' => $sources
+            ];
         }
     }
 
