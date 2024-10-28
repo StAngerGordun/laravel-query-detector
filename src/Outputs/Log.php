@@ -15,14 +15,18 @@ class Log implements Output
 
     public function output(Collection $detectedQueries, Response $response)
     {
-
         foreach ($detectedQueries as $detectedQuery) {
-            $this->log('Detected N+1 Query', $detectedQuery);
+            $sources = [];
+            foreach ($detectedQuery['sources'] as $source) {
+                $sources[] = '#'.$source->index.' '.$source->name.':'.$source->line . PHP_EOL;
+            }
+            $detectedQuery['sources'] = $sources;
+            $this->log($detectedQuery);
         }
     }
 
-    private function log(string $message, array $context = [])
+    private function log(array $context = [])
     {
-        LaravelLog::channel(config('querydetector.log_channel'))->info($message, $context);
+        LaravelLog::channel(config('querydetector.log_channel'))->warning('Detected N+1 Query', $context);
     }
 }
