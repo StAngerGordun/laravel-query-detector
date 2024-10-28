@@ -16,11 +16,6 @@ class Log implements Output
     public function output(Collection $detectedQueries, Response $response)
     {
         foreach ($detectedQueries as $detectedQuery) {
-            $sources = [];
-            foreach ($detectedQuery['sources'] as $source) {
-                $sources[] = '#'.$source->index.' '.$source->name.':'.$source->line . PHP_EOL;
-            }
-            $detectedQuery['sources'] = $sources;
             $this->log($detectedQuery);
         }
     }

@@ -87,19 +87,19 @@ class QueryDetector
             } else {
                 $model = get_class($modelTrace['object'] ?? '');
             }
-            $sources = $this->findSource($backtrace);
-
-
+//            $sources = $this->findSource($backtrace);
             $key = md5($query->sql);
             $count = Arr::get($this->queries, $key . '.count', 0);
             $time = Arr::get($this->queries, $key . '.time', 0);
+            $prevSources =  Arr::get($this->queries, $key . '.sources', []);
+//            $prevSources[] = $sources;
 
             $this->queries[$key] = [
                 'count' => ++$count,
                 'time' => $time + $query->time,
                 'query' => $query->sql,
                 'model' => $model,
-                'sources' => $sources
+//                'sources' => $prevSources
             ];
         }
     }
