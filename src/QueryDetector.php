@@ -87,19 +87,22 @@ class QueryDetector
             } else {
                 $model = get_class($modelTrace['object'] ?? '');
             }
-            $sources = $this->findSource($backtrace);
             $key = md5($query->sql);
             $count = Arr::get($this->queries, $key . '.count', 0);
             $time = Arr::get($this->queries, $key . '.time', 0);
-            $prevSources =  Arr::get($this->queries, $key . '.sources', []);
-            $prevSources[] = array_slice($sources, 0, 5);
+            $sources = Arr::get($this->queries, $key . '.sources', []);
+            $sources[] = array_slice($this->findSource($backtrace), 0, 5);
+
+            $bindings = Arr::get($this->queries, $key . '.bindings', []);
+            $bindings[] = $query->bindings;
 
             $this->queries[$key] = [
                 'count' => ++$count,
                 'time' => $time + $query->time,
                 'query' => $query->sql,
                 'model' => $model,
-                'sources' => $prevSources
+                'sources' => $sources,
+                'bindings' => $bindings,
             ];
         }
     }
@@ -139,6 +142,7 @@ class QueryDetector
      * Check if the given file is to be excluded from analysis
      *
      * @param string $file
+     *
      * @return bool
      */
     protected function fileIsInExcludedPath($file)
@@ -163,6 +167,7 @@ class QueryDetector
      * Shorten the path by removing the relative links and base dir
      *
      * @param string $path
+     *
      * @return string
      */
     protected function normalizeFilename($path): string

@@ -35,7 +35,7 @@ class QueryDetectorServiceProvider extends ServiceProvider
             /** @var QueryDetector $detector */
             $detector = app()->make(QueryDetector::class);
             if ($detector->isEnabled()) {
-                $detector->output(request(), response());
+                $detector->output(request(), response()->json());
             }
         });
     }
