@@ -81,35 +81,29 @@ class QueryDetector
             if (is_array($relation) && isset($relation['object'])) {
                 if ($relation['class'] === Relation::class) {
                     $model = get_class($relation['object']->getParent());
-                    $relationName = get_class($relation['object']->getRelated());
-                    $relatedModel = $relationName;
                 } else {
                     $model = get_class($relation['object']);
-                    $relationName = $relation['args'][0];
-                    $relatedModel = $relationName;
                 }
-
-                $sources = $this->findSource($backtrace);
-                
-                if (empty($sources)) {
-                    return;
-                }
-
-                $key = md5($query->sql . $model . $relationName . $sources[0]->name . $sources[0]->line);
-
-                $count = Arr::get($this->queries, $key . '.count', 0);
-                $time = Arr::get($this->queries, $key . '.time', 0);
-
-                $this->queries[$key] = [
-                    'count' => ++$count,
-                    'time' => $time + $query->time,
-                    'query' => $query->sql,
-                    'model' => $model,
-                    'relatedModel' => $relatedModel,
-                    'relation' => $relationName,
-                    'sources' => $sources
-                ];
+            } else {
+                $model = get_class($modelTrace['object'] ?? '');
             }
+            $key = md5($query->sql);
+            $count = Arr::get($this->queries, $key . '.count', 0);
+            $time = Arr::get($this->queries, $key . '.time', 0);
+            $sources = Arr::get($this->queries, $key . '.sources', []);
+            $sources[] = array_slice($this->findSource($backtrace), 0, 5);
+
+            $bindings = Arr::get($this->queries, $key . '.bindings', []);
+            $bindings[] = $query->bindings;
+
+            $this->queries[$key] = [
+                'count' => ++$count,
+                'time' => $time + $query->time,
+                'query' => $query->sql,
+                'model' => $model,
+                'sources' => $sources,
+                'bindings_json' => json_encode($bindings),
+            ];
         }
     }
 
@@ -148,6 +142,7 @@ class QueryDetector
      * Check if the given file is to be excluded from analysis
      *
      * @param string $file
+     *
      * @return bool
      */
     protected function fileIsInExcludedPath($file)
@@ -172,6 +167,7 @@ class QueryDetector
      * Shorten the path by removing the relative links and base dir
      *
      * @param string $path
+     *
      * @return string
      */
     protected function normalizeFilename($path): string
